@@ -3,8 +3,6 @@ import os
 import requests
 import datetime
 
-API_KEY = "demo"
-os.environ['HAPIKEY'] = API_KEY
 def hub(endpoint, payload, method="get"):
     """
     make calls to hubspot
@@ -13,7 +11,7 @@ def hub(endpoint, payload, method="get"):
     base = "https://api.hubapi.com"
     method = method.lower()      
     url = "{0}{1}".format(base, endpoint)
-    data = {"hapikey": os.environ['HAPIKEY']}
+    data = {"hapikey": os.environ.get('HAPIKEY', "demo")}
     if method != "post":
       data = {**data, **payload}
       return requests.__getattribute__(method)(url,params=data)
@@ -148,8 +146,13 @@ if __name__ == "__main__":
 
   # write a query to pull out the results 
   cursor = connector.cursor()
-  r = cursor.execute("SELECT type, DATE(FROM_UNIXTIME(createdAt/1000)) as day, COUNT(*) as num_engagements FROM engagements GROUP BY type, day ORDER BY type, day ASC")
-  print(list(cursor))
-  connector.close()
+  cursor.execute("SELECT type, DATE(FROM_UNIXTIME(createdAt/1000)) as day, COUNT(*) as num_engagements FROM engagements GROUP BY type, day ORDER BY type, day ASC")
 
+  # print each result out on a newline
+  print("\n".join([str(x) for x in list(cursor)]))
+  
+  # close the connection
+  cursor.close()
+  connector.close()
+  
   
